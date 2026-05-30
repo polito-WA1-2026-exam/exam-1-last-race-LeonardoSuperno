@@ -22,9 +22,11 @@
 
 ## Database Tables
 
-- Table `users` - contains xx yy zz
-- Table `something` - contains ww qq ss
-- ...
+- Table `lines` - id, name, color
+- Table `stations` - id, name, x, y
+- Table `connections` - id, station_from, station_to, line_id
+- Table `events` - id, description, effect
+- Table `user` - id, name, email, password, salt
 
 ## Main React Components
 
