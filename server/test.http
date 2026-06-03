@@ -1,0 +1,47 @@
+POST http://localhost:3001/api/sessions
+content-type: application/json
+
+{
+  "username": "luigi.derussis@polito.it",
+  "password": "password" 
+}
+
+###
+# Logout
+
+DELETE http://localhost:3001/api/sessions/current
+
+
+###
+
+# Rebuild session
+
+GET http://localhost:3001/api/sessions/current
+
+###
+
+GET http://localhost:3001/api/stations
+
+###
+
+GET http://localhost:3001/api/connections
+
+###
+
+POST http://localhost:3001/api/new_game
+
+###
+GET http://localhost:3001/api/events
+
+###
+
+GET http://localhost:3001/api/games/1
+
+###
+POST http://localhost:3001/api/end_game
+content-type: application/json
+
+{
+  "game_id": 1,
+  "selected_connections": [7, 8, 11]
+}
