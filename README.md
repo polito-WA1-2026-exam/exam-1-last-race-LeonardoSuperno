@@ -1,5 +1,5 @@
-# Exam #N: "Exam Title"
-## Student: s123456 LASTNAME FIRSTNAME 
+# Exam #1: "Last Race"
+## Student: s338685 SUPERNO FALCO LEONARDO
 
 ## React Client Application Routes
 
@@ -9,16 +9,111 @@
 
 ## API Server
 
-- POST `/api/something`
-  - request parameters and request body content
-  - response body content
-- GET `/api/something`
-  - request parameters
-  - response body content
-- POST `/api/something`
-  - request parameters and request body content
-  - response body content
-- ...
+- POST `/api/sessions`
+  - request body:
+  ```json
+  {
+    "username": "luigi.derussis@polito.it",
+    "password": "password"
+  }
+  ```
+  - response body:
+  ```json
+  {
+    "id": 1,
+    "username": "luigi.derussis@polito.it",
+    "name": "Luigi De Russis"
+  }
+  ```
+- GET `/api/sessions/current`
+  - response body:
+  ```json
+  {
+    "id": 1,
+    "email": "luigi.derussis@polito.it",
+    "name": "Luigi",
+    "surname": "De Russis"
+  }
+  ```
+- DELETE `/api/sessions/current`
+
+
+- GET `/api/stations`
+  - response body
+  ```json
+  [
+    {
+      "id": 1,
+      "name": "Artemide Woods",
+      "x": 1,
+      "y": 4
+    }
+  ]
+  ```
+- GET `/api/connections`
+  - response body
+  ```json
+  [
+    {
+      "id": 1,
+      "station_from": 1,
+      "station_to": 4,
+      "line_color": "#1e88e5"
+    }
+  ]
+  ```
+- GET `/api/ranking`
+  - response body 
+  ```json
+  [
+    {
+      "user_id": 1,
+      "user_name": "Leo",
+      "best_score": 25
+    }
+  ]
+  ```
+- POST `/api/new_game`
+  - response body 
+  ```json
+  {
+    "game_id": 1,
+    "starting_station": {
+      "id": 1,
+      "name": "Artemide Woods",
+      "x": 1,
+      "y": 4
+    },
+    "destination_station": {
+      "id": 10,
+      "name": "Ares Arena",
+      "x": 4,
+      "y": 2
+    }
+  }
+  ```
+- POST `/api/end_game`
+  - request body 
+  ```json
+  {
+    "game_id": 1,
+    "selected_connections" : [1, 6, 11] 
+  }
+  ```
+  - response body
+  ```json
+  {
+    "final_score": 14,
+    "events": [
+      {
+        "id": 1,
+        "description": "Train strike",
+        "effect": -4
+      }
+    ]
+  }
+  ```
+
 
 ## Database Tables
 
@@ -26,7 +121,8 @@
 - Table `stations` - id, name, x, y
 - Table `connections` - id, station_from, station_to, line_id
 - Table `events` - id, description, effect
-- Table `user` - id, name, email, password, salt
+- Table `games` - id, user_id, start_station_id, destination_station_id, final_score, creation_time
+- Table `users` - id, name, email, password, salt
 
 ## Main React Components
 
