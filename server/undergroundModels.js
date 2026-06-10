@@ -5,11 +5,13 @@ function Station(id, name, x, y) {
   this.y = y;
 }
 
-function Connection(id, station_from, station_to, line_color) {
+function Connection(id, station_from, station_to, line_color, name_station_from, name_station_to) {
     this.id = id,
     this.station_from = station_from,
     this.station_to = station_to,
-    this.line_color = line_color
+    this.line_color = line_color,
+    this.name_station_from = name_station_from,
+    this.name_station_to = name_station_to
 }
 
 function Event(id, description, effect) {

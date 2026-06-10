@@ -1,6 +1,135 @@
-import { useState } from "react";
-import { Row, Col, Card, ListGroup, Button } from "react-bootstrap";
+import { useEffect, useState } from "react";
+import { Row, Col, Card, ListGroup, Button,Spinner, Alert, Stack } from "react-bootstrap";
 import { ArrowUp, ArrowDown, Trash } from "react-bootstrap-icons";
+import { useNavigate } from 'react-router';
+import { newGame, endGame } from "../api/api.js";
+
+
+function GameDashboard({ connections = [],  results, setResults }) {
+    const [gameInfo, setGameInfo] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+    const [selectedConnections, setSelectedConnections] = useState([]);
+    const [timeLeft, setTimeLeft] = useState(90);
+    const [expired, setExpired] = useState(false);
+
+    const navigate = useNavigate();    
+
+    
+    const handleAutoSubmit = async () => {
+        const connections_id = selectedConnections.map(c => c.id);
+       
+
+        const requestBody = {
+            game_id: gameInfo.game_id,
+            selected_connections: connections_id
+        };
+
+        const result = await endGame(requestBody);
+        setResults(result);
+
+        
+    };
+
+    useEffect(() => {
+        const loadGame = async () => {
+            try {
+                const game = await newGame();
+
+                setGameInfo(game);
+            } catch (err) {
+                setError("Unable to start a new game.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadGame();
+    }, []);
+
+    useEffect(() => {
+        if (loading || !gameInfo) return;
+
+        const timer = setInterval(() => {
+            setTimeLeft(prev => {
+                if (prev <= 1) {
+                    clearInterval(timer);
+                    setExpired(true);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [loading, gameInfo]);
+
+    useEffect(() => {
+        if (!expired) return;
+        
+        handleAutoSubmit();
+        const timeout = setTimeout(() => {
+            navigate("/results", { replace: true });
+        }, 5000);
+
+        return () => clearTimeout(timeout);
+    }, [expired]);
+
+    if (loading) {
+        return <Spinner animation="border" />;
+    }
+
+    if (error) {
+        return <Alert variant="danger">{error}</Alert>;
+    }
+
+
+    
+    if (expired) {
+        return (
+            <Alert variant="danger" className="text-center">
+                ⏱ Time's up! Submitting your path...
+            </Alert>
+        );
+    }
+    return (
+        <>
+            <Card className="mb-4">
+                <Card.Header>Game Information</Card.Header>
+
+                <Card.Body>
+                    <Row>
+                        <Col md={4}>
+                            <h5>Starting Station</h5>
+                            <p>
+                                <strong>{gameInfo.starting_station.name}</strong>
+                                
+                            </p>
+                        </Col>
+
+                        <Col md={4}>
+                            <h5>Destination Station</h5>
+                            <p>
+                                <strong>{gameInfo.destination_station.name}</strong>
+                                
+                            </p>
+                        </Col>
+                        <Col md={4}>
+                            <Alert variant={timeLeft <= 10 ? "danger" : "primary"} className="text-center">
+                                ⏱ Time left: {timeLeft}s
+                            </Alert>
+                        </Col>
+                    </Row>
+                </Card.Body>
+            </Card>
+
+            <PathSelection connections={connections} selectedConnections={selectedConnections} setSelectedConnections={setSelectedConnections} gameId={gameInfo.game_id} setResults={setResults} />
+        </>
+    );
+}
+
+
+
 
 function ConnectionItem({
     connection,
@@ -62,8 +191,29 @@ function ConnectionItem({
     );
 }
 
-function PathSelection({ connections = [] }) {
-    const [selectedConnections, setSelectedConnections] = useState([]);
+function PathSelection({ connections = [], selectedConnections, setSelectedConnections, gameId, setResults }) {
+
+    const navigate = useNavigate();
+
+    const handleSubmit = async (setResults) => {
+    try {
+        const connections_id = selectedConnections.map(c => c.id);
+
+        const requestBody = {
+            game_id: gameId,
+            selected_connections: connections_id
+        };
+
+        const result = await endGame(requestBody);
+
+        setResults(result);
+
+        navigate("/results", { replace: true });
+
+    } catch (err) {
+        console.error("Error during endGame:", err);
+    }
+};
 
     const addConnection = (connection) => {
         if (selectedConnections.some(c => c.id === connection.id)) {
@@ -126,35 +276,50 @@ function PathSelection({ connections = [] }) {
             </Col>
 
             <Col md={6}>
-                <Card>
-                    <Card.Header>
-                        Selected Path
-                    </Card.Header>
+            <Card>
+                <Card.Header>
+                    Selected Path
+                </Card.Header>
 
-                    <ListGroup variant="flush">
-                        {selectedConnections.length === 0 && (
-                            <ListGroup.Item>
-                                No segments selected.
-                            </ListGroup.Item>
-                        )}
+                <ListGroup variant="flush">
+                    {selectedConnections.length === 0 && (
+                        <ListGroup.Item>
+                            No segments selected.
+                        </ListGroup.Item>
+                    )}
 
-                        {selectedConnections.map((connection, index) => (
-                            <ConnectionItem
-                                key={connection.id}
-                                connection={connection}
-                                mode="selected"
-                                index={index}
-                                total={selectedConnections.length}
-                                onRemove={removeConnection}
-                                onMoveUp={moveUp}
-                                onMoveDown={moveDown}
-                            />
-                        ))}
-                    </ListGroup>
-                </Card>
-            </Col>
+                    {selectedConnections.map((connection, index) => (
+                        <ConnectionItem
+                            key={connection.id}
+                            connection={connection}
+                            mode="selected"
+                            index={index}
+                            total={selectedConnections.length}
+                            onRemove={removeConnection}
+                            onMoveUp={moveUp}
+                            onMoveDown={moveDown}
+                        />
+                    ))}
+                </ListGroup>
+
+                <Card.Body>
+                    <Stack direction="horizontal" gap={2}>
+                        <Button variant="success"
+                                onClick={() => handleSubmit(setResults)}>
+                            Submit
+                        </Button>
+
+                        <Button variant="danger">
+                            Quit
+                        </Button>
+                    </Stack>
+                </Card.Body>
+            </Card>
+        </Col>
         </Row>
     );
 }
 
-export default PathSelection;
+
+
+export default GameDashboard;

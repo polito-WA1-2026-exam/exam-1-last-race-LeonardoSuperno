@@ -35,13 +35,17 @@ GET http://localhost:3001/api/events
 
 ###
 
-GET http://localhost:3001/api/games/1
+GET http://localhost:3001/api/games/48
 
 ###
 POST http://localhost:3001/api/end_game
 content-type: application/json
 
 {
-  "game_id": 1,
+  "game_id": 48,
   "selected_connections": [7, 8, 11]
 }
+
+###
+ 
+GET http://localhost:3001/api/ranking

@@ -58,15 +58,19 @@ export const listConnections = () => {
                 connections.station_to AS station_to,
                 connections.line_id AS line_id,
                 lines.color AS color,
-                lines.name AS name
+                lines.name AS name,
+                sf.name AS name_station_from,
+                st.name AS name_station_to
             FROM connections
             JOIN lines ON connections.line_id = lines.id
+            JOIN stations AS sf ON connections.station_from = sf.id
+            JOIN stations AS st ON connections.station_to = st.id
         `;
         db.all(sql, [], (err, rows) => {
             if (err)
                 reject(err);
             else {
-                const connections = rows.map((c) => new Connection(c.id, c.station_from, c.station_to, c.color));
+                const connections = rows.map((c) => new Connection(c.id, c.station_from, c.station_to, c.color, c.name_station_from, c.name_station_to));
                 resolve(connections);
             }
         });
@@ -124,6 +128,23 @@ export const endGame = (gameId, score) => {
         db.run(sql, [score, gameId], function (err) {
             if (err) reject(err);
             else resolve();
+        });
+    });
+};
+
+export const getRanking = () => {
+    return new Promise((resolve, reject) => {
+        const sql = `
+            SELECT u.name, MAX(g.final_score) AS best_score
+            FROM users u
+            JOIN games g ON u.id = g.user_id
+            WHERE g.status = 'COMPLETED'
+            GROUP BY u.id, u.name
+            ORDER BY best_score DESC
+        `;
+        db.all(sql, [], (err, rows) => {
+            if (err) reject(err);
+            else resolve(rows);
         });
     });
 };

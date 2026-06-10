@@ -2,11 +2,14 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { useContext, useState, useEffect } from 'react';
 import { Container, Button } from 'react-bootstrap';
 import Header from './components/Header.jsx';
+import Sidebar from './components/Sidebar.jsx';
 import { LoginForm, Logout } from './components/LoginForm.jsx';
 import NetworkDisplay  from './components/Network.jsx';
-import PathSelection from './components/Path.jsx';
+import GameDashboard from './components/Path.jsx';
+import ResultDisplay from './components/Results.jsx';
+import RankingDisplay from './components/RankingDisplay.jsx';
 import { Navigate, Outlet, Route, Routes, useNavigate } from 'react-router';
-import { getStations, getConnections } from "./api/api.js";
+import { getStations, getConnections, endGame } from "./api/api.js";
 
 import UserContext from './contexts/UserContext.js';
 import { checkSession } from './api/auth.js';
@@ -46,18 +49,24 @@ function App() {
             .catch(console.error);
     }, []);
 
+    
+    const [results, setResults] = useState(null);
+
+
   return (
     <UserContext.Provider value={user}>
       <Container>
         <Routes>
           <Route path='/' element={<MainLayout doLogin={doLogin} />}>
-            <Route index element={<LoginView />} />
+            <Route index element={<InfoView />} />
             <Route path='home' element={<HomeLayout stations={stations} connections={connections} />} />
             <Route path='login' element={<LoginForm doLogin={doLogin} />} />
             <Route path='logout' element={<Logout doLogin={doLogin} />} />
-            <Route path='game' element={<GameLayout stations={stations} connections={connections} />} />
+            <Route path='results' element={<ResultDisplay results={results} />} />
+            <Route path='ranking' element={<RankingDisplay />} />
             <Route path='error' element={<h1>"Something is Wrong"</h1>} />
           </Route>
+          <Route path='/game' element={<GameLayout stations={stations} connections={connections} results={results} setResults={setResults} />} />
         </Routes>
       </Container>
     </UserContext.Provider>
@@ -66,10 +75,22 @@ function App() {
 }
 
 function MainLayout(props) {
-  return <>
-    <Header doLogin={props.doLogin}></Header>
-    <Outlet />
-  </>
+  return (
+    <>
+      <Header doLogin={props.doLogin} />
+      <Sidebar />
+
+      <div
+        style={{
+          paddingTop: "56px", // altezza header
+          marginLeft: "70px", // larghezza sidebar
+          minHeight: "100vh"
+        }}
+      >
+        <Outlet />
+      </div>
+    </>
+  );
 }
 
 function HomeLayout(props) {
@@ -83,8 +104,7 @@ function HomeLayout(props) {
 function GameLayout(props) {
   return <>
     <NetworkDisplay stations={props.stations}/>
-    <PathSelection stations={props.stations} connections={props.connections}/>
-    
+    <GameDashboard connections={props.connections}  results={props.results} setResults={props.setResults}/>
 
   </>
 }
@@ -95,14 +115,11 @@ function NewGameButton(props) {
   return <Button onClick={() => navigate('/game')}>Play Game</Button>
 }
 
-function LoginView(props) {
 
-  // if user.id is not undefined, navigate to /home
-  const user = useContext(UserContext)
-  if (user.id)
-    return <Navigate to='/home' />
+function InfoView() {
 
-  return "Login View : main welcome page for anonymous users"
+  
+  return "Info about the game, visible also by unlogged users"
 }
 
 export default App

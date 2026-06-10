@@ -3,7 +3,7 @@ import express from "express";
 import morgan from "morgan"
 import cors from "cors"
 import { check, validationResult } from "express-validator";
-import { getUser, listStations, listConnections, listEvents, getGameById, newGame, endGame } from "./dao.js";
+import { getUser, listStations, listConnections, listEvents, getGameById, newGame, endGame, getRanking } from "./dao.js";
 import { generateGame, buildGraph } from "./gameService.js";
 
 
@@ -141,33 +141,43 @@ app.post("/api/end_game", isLoggedIn, async (req, res) => {
     try {
         const userId = req.user.id;
         const { game_id, selected_connections } = req.body;
-        console.log("Selected connections:", selected_connections);
+        console.log(req.body);
+        console.log("Game ID:", game_id);
 
         // 1. GET GAME
         const game = await getGameById(game_id);
 
         if (!game) {
-            return res.status(404).json({ error: "Game not found" });
+            return res.status(200).json({ error: "Game not found" });
         }
 
         // 2. CHECK OWNER
         if (game.user_id !== userId) {
-            return res.status(403).json({ error: "Not your game" });
+            return res.status(200).json({ error: "Not your game" });
         }
 
         // 3. CHECK STATUS
         if (game.status === "COMPLETED") {
-            return res.status(400).json({ error: "Game already finished" });
+            return res.status(200).json({ error: "Game already finished" });
         }
 
-        // 4. LOAD GRAPH
+        // 4. CHECK TIME LIMIT (90 seconds)
+        const gameLimit = 90;
+        const delayWindow = 10;
+        const timeLimit = gameLimit + delayWindow; // add some seconds of delay window to avoid penalizing players for network delays
+        const gameTime = Date.now() - game.creation_time;
+        if (gameTime > timeLimit * 1000) {
+            return res.status(200).json({ error: "Game time limit exceeded" });
+        }
+
+        // 5. LOAD GRAPH
         const connections = await listConnections();
         
         const graph = buildGraph(connections);
 
 
 
-        // 5. VALIDATE PATH (must be continuous)
+        // 6. VALIDATE PATH (must be continuous)
         let old_station = game.start_station_id;
 
         for (let i = 0; i < selected_connections.length; i++) {
@@ -175,23 +185,26 @@ app.post("/api/end_game", isLoggedIn, async (req, res) => {
             const conn = connections.find(c => c.id === selected_connections[i]);
 
             if (!conn) {
-                return res.status(400).json({ error: "Invalid connection id" });
+                await endGame(game_id, 0);
+                return res.status(200).json({ final_score: 0, events: [], error: "Invalid connection ID: " + selected_connections[i] });
             }
 
             if (conn.station_to !== old_station && conn.station_from !== old_station) {
-                return res.status(400).json({ error: "Invalid path sequence" });
+                await endGame(game_id, 0);
+                return res.status(200).json({ final_score: 0, events: [], error: "Invalid path sequence" });
             }
             old_station = (conn.station_from === old_station) ? conn.station_to : conn.station_from;
         }
 
         if (old_station !== game.destination_station_id) {
-            return res.status(400).json({ error: "Path does not reach destination" });
+            await endGame(game_id, 0);
+            return res.status(200).json({ final_score: 0, events: [], error: "Path does not reach destination" });
         }
 
-        // 8. BASE SCORE
+        // 7. BASE SCORE
         let score = 20;
 
-        // 9. APPLY EVENTS (1 random event per connection)
+        // 8. APPLY EVENTS (1 random event per connection)
         const events = await listEvents();
 
         const appliedEvents = [];
@@ -208,10 +221,10 @@ app.post("/api/end_game", isLoggedIn, async (req, res) => {
             });
         }
 
-        // 10. SCORE NORMALIZATION
+        // 9. SCORE NORMALIZATION
         if (score < 0) score = 0;
 
-        // 11. UPDATE GAME
+        // 10. UPDATE GAME
         await endGame(game_id, score);
 
 
@@ -229,6 +242,16 @@ app.post("/api/end_game", isLoggedIn, async (req, res) => {
 
    
 });
+
+app.get("/api/ranking", isLoggedIn, async (req, res) => {
+  try {
+    const ranking = await getRanking();
+    return res.json(ranking);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+})
 
 
 

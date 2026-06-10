@@ -103,7 +103,7 @@
   - response body
   ```json
   {
-    "final_score": 14,
+    "final_score": 16,
     "events": [
       {
         "id": 1,
