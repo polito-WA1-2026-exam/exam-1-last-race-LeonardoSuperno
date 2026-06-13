@@ -5,31 +5,16 @@ import { useNavigate } from 'react-router';
 import { newGame, endGame } from "../api/api.js";
 
 
-function GameDashboard({ connections = [],  results, setResults }) {
+
+function GameDashboard({ connections = [],  selectedConnections, setSelectedConnections, gameId, setGameId }) {
     const [gameInfo, setGameInfo] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    const [selectedConnections, setSelectedConnections] = useState([]);
     const [timeLeft, setTimeLeft] = useState(90);
     const [expired, setExpired] = useState(false);
 
-    const navigate = useNavigate();    
-
+    const navigate = useNavigate(); 
     
-    const handleAutoSubmit = async () => {
-        const connections_id = selectedConnections.map(c => c.id);
-       
-
-        const requestBody = {
-            game_id: gameInfo.game_id,
-            selected_connections: connections_id
-        };
-
-        const result = await endGame(requestBody);
-        setResults(result);
-
-        
-    };
 
     useEffect(() => {
         const loadGame = async () => {
@@ -37,6 +22,9 @@ function GameDashboard({ connections = [],  results, setResults }) {
                 const game = await newGame();
 
                 setGameInfo(game);
+                setGameId(game.game_id);
+                setSelectedConnections([]);
+
             } catch (err) {
                 setError("Unable to start a new game.");
             } finally {
@@ -47,6 +35,7 @@ function GameDashboard({ connections = [],  results, setResults }) {
         loadGame();
     }, []);
 
+    // Countdown timer
     useEffect(() => {
         if (loading || !gameInfo) return;
 
@@ -64,19 +53,24 @@ function GameDashboard({ connections = [],  results, setResults }) {
         return () => clearInterval(timer);
     }, [loading, gameInfo]);
 
+    // Automatically submit path when time expires
     useEffect(() => {
         if (!expired) return;
         
-        handleAutoSubmit();
         const timeout = setTimeout(() => {
             navigate("/results", { replace: true });
-        }, 5000);
+        }, 3000);
 
         return () => clearTimeout(timeout);
     }, [expired]);
 
     if (loading) {
-        return <Spinner animation="border" />;
+        return (
+            <div className="d-flex flex-column justify-content-start align-items-center vh-100 pt-3">
+            <Spinner animation="border" />
+            <div className="mt-2">Loading the game</div>
+            </div>
+        );
     }
 
     if (error) {
@@ -88,14 +82,22 @@ function GameDashboard({ connections = [],  results, setResults }) {
     if (expired) {
         return (
             <Alert variant="danger" className="text-center">
-                ⏱ Time's up! Submitting your path...
+                Time's up! Submitting your path...
             </Alert>
         );
     }
     return (
         <>
             <Card className="mb-4">
-                <Card.Header>Game Information</Card.Header>
+                <Card.Header
+                    style={{
+                        backgroundColor: "#fffacd",
+                        borderBottom: "5px solid #1A2A3A",
+                        color: "#1A2A3A"
+                    }}
+                    >
+                    <h4 className="mb-0">Game Information</h4>
+                </Card.Header>
 
                 <Card.Body>
                     <Row>
@@ -116,14 +118,14 @@ function GameDashboard({ connections = [],  results, setResults }) {
                         </Col>
                         <Col md={4}>
                             <Alert variant={timeLeft <= 10 ? "danger" : "primary"} className="text-center">
-                                ⏱ Time left: {timeLeft}s
+                                 Time left: {timeLeft}s
                             </Alert>
                         </Col>
                     </Row>
                 </Card.Body>
             </Card>
 
-            <PathSelection connections={connections} selectedConnections={selectedConnections} setSelectedConnections={setSelectedConnections} gameId={gameInfo.game_id} setResults={setResults} />
+            <PathSelection connections={connections} selectedConnections={selectedConnections} setSelectedConnections={setSelectedConnections} />
         </>
     );
 }
@@ -155,6 +157,7 @@ function ConnectionItem({
                     variant="primary"
                     disabled={selected}
                     onClick={() => onSelect(connection)}
+                    style={{ backgroundColor: "#1A2A3A", borderColor: "#1A2A3A" }}
                 >
                     Select
                 </Button>
@@ -191,28 +194,12 @@ function ConnectionItem({
     );
 }
 
-function PathSelection({ connections = [], selectedConnections, setSelectedConnections, gameId, setResults }) {
+function PathSelection({ connections = [], selectedConnections, setSelectedConnections}) {
 
     const navigate = useNavigate();
 
-    const handleSubmit = async (setResults) => {
-    try {
-        const connections_id = selectedConnections.map(c => c.id);
-
-        const requestBody = {
-            game_id: gameId,
-            selected_connections: connections_id
-        };
-
-        const result = await endGame(requestBody);
-
-        setResults(result);
-
+    const handleSubmit = async () => {
         navigate("/results", { replace: true });
-
-    } catch (err) {
-        console.error("Error during endGame:", err);
-    }
 };
 
     const addConnection = (connection) => {
@@ -255,9 +242,15 @@ function PathSelection({ connections = [], selectedConnections, setSelectedConne
         <Row>
             <Col md={6}>
                 <Card>
-                    <Card.Header>
-                        Segments
-                    </Card.Header>
+                    <Card.Header
+                    style={{
+                        backgroundColor: "#fffacd",
+                        borderBottom: "5px solid #1A2A3A",
+                        color: "#1A2A3A"
+                    }}
+                    >
+                    <h4 className="mb-0">Segments</h4>
+                </Card.Header>
 
                     <ListGroup variant="flush">
                         {connections.map(connection => (
@@ -277,8 +270,14 @@ function PathSelection({ connections = [], selectedConnections, setSelectedConne
 
             <Col md={6}>
             <Card>
-                <Card.Header>
-                    Selected Path
+                <Card.Header
+                    style={{
+                        backgroundColor: "#fffacd",
+                        borderBottom: "5px solid #1A2A3A",
+                        color: "#1A2A3A"
+                    }}
+                    >
+                    <h4 className="mb-0">Selected Segments</h4>
                 </Card.Header>
 
                 <ListGroup variant="flush">
@@ -302,17 +301,10 @@ function PathSelection({ connections = [], selectedConnections, setSelectedConne
                     ))}
                 </ListGroup>
 
-                <Card.Body>
-                    <Stack direction="horizontal" gap={2}>
-                        <Button variant="success"
-                                onClick={() => handleSubmit(setResults)}>
-                            Submit
-                        </Button>
-
-                        <Button variant="danger">
-                            Quit
-                        </Button>
-                    </Stack>
+                <Card.Body className="d-flex justify-content-end" style={{ backgroundColor: "#fffacd", borderTop: "5px solid #1A2A3A", }}>
+                    <Button variant="success" onClick={handleSubmit} style={{ backgroundColor: "#1A2A3A", borderColor: "#1A2A3A" }}>
+                        Submit
+                    </Button>
                 </Card.Body>
             </Card>
         </Col>

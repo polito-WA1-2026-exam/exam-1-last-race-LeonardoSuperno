@@ -1,52 +1,121 @@
-import { Navbar, Nav } from "react-bootstrap";
-import { Link, useNavigate } from "react-router";
-import { HouseFill, TrophyFill, InfoCircleFill } from "react-bootstrap-icons";
-import { useContext } from "react"
-import UserContext from "../contexts/UserContext"
+import { Navbar, Nav, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { useNavigate, useLocation } from "react-router";
+import {
+    House,
+    HouseFill,
+    Trophy,
+    TrophyFill,
+    InfoCircle,
+    InfoCircleFill,
+    List
+} from "react-bootstrap-icons";
+import { useContext, useState } from "react";
+import UserContext from "../contexts/UserContext";
 
-function Sidebar() {
+function Sidebar({ expanded, setExpanded }) {
     const navigate = useNavigate();
+    const location = useLocation();
     const user = useContext(UserContext);
+
+    
+
+    const menuItems = [
+        {
+            label: "Home",
+            path: "/home",
+            icon: <House size={24} />,
+            activeIcon: <HouseFill size={24} />,
+            onClick: () =>
+                user.id ? navigate("/home") : navigate("/login")
+        },
+        {
+            label: "Ranking",
+            path: "/ranking",
+            icon: <Trophy size={24} />,
+            activeIcon: <TrophyFill size={24} />,
+            onClick: () =>
+                user.id ? navigate("/ranking") : navigate("/login")
+        },
+        {
+            label: "Info",
+            path: "/",
+            icon: <InfoCircle size={24} />,
+            activeIcon: <InfoCircleFill size={24} />,
+            onClick: () => navigate("/")
+        }
+    ];
 
     return (
         <Navbar
-            className="d-flex flex-column align-items-center py-3"
+            className="d-flex flex-column py-3"
             style={{
-                width: "70px",
-                height: "calc(100vh - 56px)",
+                width: expanded ? "200px" : "56px",
+                height: "100vh",
                 position: "fixed",
                 left: 0,
                 top: "56px",
-                backgroundColor: "#ebc36d"
+                backgroundColor: "#edb742",
+                transition: "width 0.3s ease"
             }}
         >
-            <Nav className="flex-column text-center gap-4">
+            <Nav className="flex-column w-100 px-2">
 
-                <HouseFill
-                    size={24}
-                    color="#1A2A3A"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => user.id ? navigate('/home') : navigate('/login')}
-                />
+                <div
+                    onClick={() => setExpanded(!expanded)}
+                    className="d-flex align-items-center mb-2"
+                    style={{
+                        cursor: "pointer",
+                        color: "#1A2A3A",
+                        padding: "8px"
+                    }}
+                >
+                    <List size={24} />
+                    {expanded && (
+                        <span className="ms-3 fw-bold">
+                            Menu
+                        </span>
+                    )}
+                </div>
 
-                <TrophyFill
-                    size={24}
-                    color="#1A2A3A"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => user.id ? navigate('/ranking') : navigate('/login')}
-                />
+                {menuItems.map((item) => {
+                    const active = location.pathname === item.path;
 
-                <InfoCircleFill
-                    size={24}
-                    color="#1A2A3A"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => navigate('/')}
-                />
+                    return (
+                        <OverlayTrigger
+                            key={item.label}
+                            placement="right"
+                            overlay={<Tooltip>{item.label}</Tooltip>}
+                        >
+                            <div
+                                onClick={item.onClick}
+                                className="d-flex align-items-center mb-2"
+                                style={{
+                                    cursor: "pointer",
+                                    color: "#1A2A3A",
+                                    padding: "8px",
+                                    borderRadius: "8px",
+                                    backgroundColor: active
+                                        ? "rgba(26,42,58,0.15)"
+                                        : "transparent",
+                                    transition: "all 0.2s ease"
+                                }}
+                            >
+                                {active
+                                    ? item.activeIcon
+                                    : item.icon}
 
+                                {expanded && (
+                                    <span className="ms-3">
+                                        {item.label}
+                                    </span>
+                                )}
+                            </div>
+                        </OverlayTrigger>
+                    );
+                })}
             </Nav>
         </Navbar>
     );
 }
-
 
 export default Sidebar;

@@ -12,10 +12,9 @@ function Header(props) {
   return (
     <Navbar
       style={{
-        backgroundColor: "#ebc36d",
+        backgroundColor: "#edb742",
         borderBottom: '2px solid #1A2A3A',
-        height: '56px',
-        width: '100%'
+        height: '56px'
       }}
       fixed="top"
     >

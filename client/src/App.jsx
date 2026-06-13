@@ -8,8 +8,11 @@ import NetworkDisplay  from './components/Network.jsx';
 import GameDashboard from './components/Path.jsx';
 import ResultDisplay from './components/Results.jsx';
 import RankingDisplay from './components/RankingDisplay.jsx';
+import Footer from './components/Footer.jsx';
+import InfoDisplay from './components/InfoDisplay.jsx';
 import { Navigate, Outlet, Route, Routes, useNavigate } from 'react-router';
 import { getStations, getConnections, endGame } from "./api/api.js";
+import backgroundImage from './background.jpg';
 
 import UserContext from './contexts/UserContext.js';
 import { checkSession } from './api/auth.js';
@@ -49,26 +52,28 @@ function App() {
             .catch(console.error);
     }, []);
 
+  const [selectedConnections, setSelectedConnections] = useState([]);
+  const [gameId, setGameId] = useState(null);
+  const [expandedSidebar, setExpandedSidebar] = useState(false);
+
     
-    const [results, setResults] = useState(null);
+  
 
 
   return (
     <UserContext.Provider value={user}>
-      <Container>
         <Routes>
-          <Route path='/' element={<MainLayout doLogin={doLogin} />}>
-            <Route index element={<InfoView />} />
+          <Route path='/' element={<MainLayout doLogin={doLogin} expandedSidebar={expandedSidebar} setExpandedSidebar={setExpandedSidebar} />}>
+            <Route index element={<InfoDisplay />} />
             <Route path='home' element={<HomeLayout stations={stations} connections={connections} />} />
             <Route path='login' element={<LoginForm doLogin={doLogin} />} />
             <Route path='logout' element={<Logout doLogin={doLogin} />} />
-            <Route path='results' element={<ResultDisplay results={results} />} />
+            <Route path='results' element={<ResultDisplay selectedConnections={selectedConnections} gameId={gameId} />} />
             <Route path='ranking' element={<RankingDisplay />} />
             <Route path='error' element={<h1>"Something is Wrong"</h1>} />
           </Route>
-          <Route path='/game' element={<GameLayout stations={stations} connections={connections} results={results} setResults={setResults} />} />
+          <Route path='/game' element={<GameLayout stations={stations} connections={connections} selectedConnections={selectedConnections} setSelectedConnections={setSelectedConnections} gameId={gameId} setGameId={setGameId} />} />
         </Routes>
-      </Container>
     </UserContext.Provider>
   )
 
@@ -77,18 +82,33 @@ function App() {
 function MainLayout(props) {
   return (
     <>
+    <div
+      style={{
+          backgroundImage: `url(${backgroundImage})`,
+          backgroundRepeat: "repeat",
+          backgroundSize: "150px"
+      }}>
+   
       <Header doLogin={props.doLogin} />
-      <Sidebar />
-
-      <div
-        style={{
-          paddingTop: "56px", // altezza header
-          marginLeft: "70px", // larghezza sidebar
-          minHeight: "100vh"
-        }}
-      >
-        <Outlet />
-      </div>
+      <Sidebar expanded={props.expandedSidebar} setExpanded={props.setExpandedSidebar} />
+      <Container>
+        <div
+          style={{
+            paddingTop: "56px", // altezza header
+            marginLeft: props.expandedSidebar ? "200px" : "56px", // larghezza sidebar
+            minHeight: "100vh",
+            paddingBottom: "56px", // altezza footer
+          
+          }}
+        >
+          <Outlet />
+        </div>
+        </Container>
+        
+      
+      <Footer />
+   
+    </div>
     </>
   );
 }
@@ -102,17 +122,40 @@ function HomeLayout(props) {
 }
 
 function GameLayout(props) {
-  return <>
-    <NetworkDisplay stations={props.stations}/>
-    <GameDashboard connections={props.connections}  results={props.results} setResults={props.setResults}/>
+  return (
+    <>    
+    <Container>
+      <div className="mb-3">
+        <NetworkDisplay stations={props.stations} />
+      </div>
 
-  </>
+      <GameDashboard
+        connections={props.connections}
+        selectedConnections={props.selectedConnections}
+        setSelectedConnections={props.setSelectedConnections}
+        gameId={props.gameId}
+        setGameId={props.setGameId}
+      />
+      
+    </Container>
+
+    <div className="mt-3">
+      <Footer />
+    </div>
+    
+    </>
+  );
 }
 
 function NewGameButton(props) {
   const navigate = useNavigate()
 
-  return <Button onClick={() => navigate('/game')}>Play Game</Button>
+  return (
+    <div className="d-flex justify-content-center mt-4">
+      <Button onClick={() => navigate('/game')}  style={{ backgroundColor: "#1A2A3A", borderColor: "#1A2A3A" }}>Play Game</Button>
+    </div>
+
+  ) 
 }
 
 

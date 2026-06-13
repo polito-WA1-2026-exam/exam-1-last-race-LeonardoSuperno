@@ -1,5 +1,10 @@
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function getStations() {
     try {
+        await delay(500) // simulate network delay
         const response = await fetch('http://localhost:3001/api/stations')
 
         if (response.ok) {
@@ -17,6 +22,7 @@ async function getStations() {
 
 async function getConnections() {
     try {
+        await delay(500) // simulate network delay
         const response = await fetch('http://localhost:3001/api/connections')
 
         if (response.ok) {
@@ -34,6 +40,7 @@ async function getConnections() {
 
 async function newGame() {
     try {
+        await delay(500) // simulate network delay
         const response = await fetch('http://localhost:3001/api/new_game', {
             method: 'POST',
             headers: {
@@ -57,6 +64,7 @@ async function newGame() {
 
 async function endGame(requestBody) {
     try {
+        await delay(500) // simulate network delay
         const response = await fetch('http://localhost:3001/api/end_game', {
             method: 'POST',
             headers: {
@@ -79,6 +87,7 @@ async function endGame(requestBody) {
 
 async function getRanking() {
     try {
+        await delay(500) // simulate network delay
         const response = await fetch('http://localhost:3001/api/ranking', {
             method: 'GET',
             credentials: 'include'

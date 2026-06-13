@@ -51,7 +51,6 @@ const isLoggedIn = (req, res, next) => {
   if(req.isAuthenticated()) {
     return next();
   }
-  console.log(req.user)
   return res.status(401).json({error: "Not authorized"});
 }
 
@@ -128,12 +127,12 @@ app.post("/api/new_game", isLoggedIn, async (req, res) => {
         generateGame(stations, graph);
 
     const game = await newGame(req.user.id, start.id, destination.id);
-
+    
     res.json({
         game_id: game.id,
         starting_station: start,
         destination_station: destination
-    });
+    }) 
 });
 
 // POST /api/end_game
@@ -141,8 +140,6 @@ app.post("/api/end_game", isLoggedIn, async (req, res) => {
     try {
         const userId = req.user.id;
         const { game_id, selected_connections } = req.body;
-        console.log(req.body);
-        console.log("Game ID:", game_id);
 
         // 1. GET GAME
         const game = await getGameById(game_id);
@@ -226,7 +223,6 @@ app.post("/api/end_game", isLoggedIn, async (req, res) => {
 
         // 10. UPDATE GAME
         await endGame(game_id, score);
-
 
       
         return res.json({

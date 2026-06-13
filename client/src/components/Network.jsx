@@ -19,7 +19,13 @@ function NetworkDisplay(props) {
     return (
         <Container fluid className="mt-4">
             <Card className="shadow-sm border-0 w-100 h-100">
-                <Card.Header className="bg-primary text-white">
+                <Card.Header
+                    style={{
+                        backgroundColor: "#fdf7c0",
+                        borderBottom: "5px solid #1A2A3A",
+                        color: "#1A2A3A"
+                    }}
+                    >
                     <h4 className="mb-0">Network Map</h4>
                 </Card.Header>
 
@@ -28,8 +34,8 @@ function NetworkDisplay(props) {
                         viewBox="0 0 800 400"
                         preserveAspectRatio="xMidYMid meet"
                         style={{
-                            width: "80%",
-                            height: "80%",
+                            width: "75%",
+                            height: "75%",
                             backgroundColor: "#f8f9fa"
                         }}
                     >
@@ -85,8 +91,8 @@ function NetworkDisplay(props) {
                                         width="130"
                                         height="40"
                                         rx="12"
-                                        fill="#0d6efd"
-                                        stroke="#084298"
+                                        fill="#fffacd"
+                                        stroke="#1A2A3A"
                                         strokeWidth="2"
                                     />
 
@@ -94,7 +100,7 @@ function NetworkDisplay(props) {
                                         x={x}
                                         y={y + 5}
                                         textAnchor="middle"
-                                        fill="white"
+                                        fill="1A2A3A"
                                         fontSize="13"
                                         fontWeight="600"
                                     >

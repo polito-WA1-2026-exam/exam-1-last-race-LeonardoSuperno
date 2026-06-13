@@ -1,10 +1,54 @@
-import React from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { Card, Button, Alert, Container, ListGroup, Badge } from "react-bootstrap";
+import { Card, Button, Alert, Container, ListGroup, Badge, Spinner } from "react-bootstrap";
+import { endGame } from "../api/api.js";
 
-function ResultsPage({ results }) {
+
+function ResultsPage({ selectedConnections, gameId }) {
+    const [loading, setLoading] = useState(true);
+    const [result, setResult] = useState(null);
+    const [error, setError] = useState("");
     const navigate = useNavigate();
-    const result = results;
+
+
+    useEffect(() => {
+        const loadGame = async () => {
+            try {
+                const connections_id = selectedConnections.map(c => c.id);
+
+                const requestBody = {
+                    game_id: gameId,
+                    selected_connections: connections_id
+                };
+
+                console.log("Request body for endGame:", requestBody);
+
+                const result = await endGame(requestBody);
+                setResult(result);
+                }
+
+            catch (err) {
+                setError("Unable to obtain game results.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadGame();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="d-flex flex-column justify-content-center align-items-center vh-100">
+            <Spinner animation="border" />
+            <div className="mt-3">Loading the results</div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return <Alert variant="danger">{error}</Alert>;
+    }
 
     if (!result) {
         return (
@@ -12,20 +56,20 @@ function ResultsPage({ results }) {
                 <Alert variant="warning">
                     No result found
                 </Alert>
-                <Button onClick={() => navigate("/")}>
+                <Button onClick={() => navigate("/home") } style={{ backgroundColor: "#1A2A3A", borderColor: "#1A2A3A" }}>
                     Back to home
                 </Button>
             </Container>
         );
     }
 
-    if (result.error) {
+    if (result && result.error) {
         return (
             <Container className="d-flex flex-column align-items-center mt-5">
                 <Card style={{ width: "30rem" }} className="shadow-lg">
                 
                 {/* HEADER */}
-                <Card.Header className="text-center bg-dark text-white">
+                <Card.Header className="text-center  text-white" style={{ backgroundColor: "#1A2A3A", borderBottom: "5px solid #edb742" }}>
                     <h3 className="mb-0">Game Result</h3>
                 </Card.Header>
 
@@ -47,7 +91,7 @@ function ResultsPage({ results }) {
                             <p>{result.error}</p>
                         </Alert>
 
-                        <Button onClick={() => navigate("/")}>
+                        <Button onClick={() => navigate("/home") } style={{ backgroundColor: "#1A2A3A", borderColor: "#1A2A3A" }}>
                             Back
                         </Button>
                     </Card.Body>
@@ -61,7 +105,7 @@ function ResultsPage({ results }) {
             <Card style={{ width: "30rem" }} className="shadow-lg">
                 
                 {/* HEADER */}
-                <Card.Header className="text-center bg-dark text-white">
+                <Card.Header className="text-center text-white" style={{ backgroundColor: "#1A2A3A", borderBottom: "5px solid #ebc36d" }}>
                     <h3 className="mb-0">Game Result</h3>
                 </Card.Header>
 
@@ -86,14 +130,22 @@ function ResultsPage({ results }) {
                                     className="d-flex justify-content-between align-items-center"
                                 >
                                     <div className="text-start">
-                                        <strong>Connection {e.connection_id}</strong>
+                                        <strong>{selectedConnections[idx]?.name_station_from} - {selectedConnections[idx]?.name_station_to}</strong>
                                         <br />
                                         <small className="text-muted">
                                             {e.event.description || "Event"}
                                         </small>
                                     </div>
-
-                                    <Badge bg="primary">
+                                    
+                                    <Badge
+                                        bg={
+                                            e.event.effect > 0
+                                            ? "success"
+                                            : e.event.effect === 0
+                                            ? "secondary"
+                                            : "danger"
+                                        }
+                                        >
                                         {e.event.effect > 0 ? `+${e.event.effect}` : e.event.effect}
                                     </Badge>
                                 </ListGroup.Item>
@@ -106,11 +158,11 @@ function ResultsPage({ results }) {
 
                 {/* FOOTER */}
                 <Card.Footer className="d-flex justify-content-between">
-                    <Button variant="secondary" onClick={() => navigate("/")}>
+                    <Button variant="secondary" onClick={() => navigate("/home") } style={{ backgroundColor: "#ebc36d", borderColor: "#ebc36d", color: "#1A2A3A" }}>
                         Quit
                     </Button>
 
-                    <Button variant="success" onClick={() => navigate("/game")}>
+                    <Button variant="success" onClick={() => navigate("/game") } style={{ backgroundColor: "#1A2A3A", borderColor: "#1A2A3A" }}>
                         Play Again
                     </Button>
                 </Card.Footer>

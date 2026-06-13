@@ -1,66 +1,118 @@
 import { useState, useEffect } from "react"
 import { doLogin, doLogout } from "../api/auth"
 import { useNavigate } from "react-router"
-import { Form, Button, Container } from "react-bootstrap"
-
+import { Form, Button, Container, Card } from "react-bootstrap"
+import { PersonCircle } from "react-bootstrap-icons"
 function LoginForm(props) {
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [errormsg, setErrormsg] = useState('')
 
-    const [username, setUsername] = useState('')
-    const [password, setPassword] = useState('')
-
-    const [errormsg, setErrormsg] = useState('')
-
-    const doSubmit = async (ev) => {
-        ev.preventDefault()
-        setErrormsg('')
-        console.log(username, password)
-
-        try {
-            // validations ...
-            const user = await doLogin(username, password)
-            props.doLogin(user)
-        } catch (ex) {
-            setErrormsg(ex.message)
-            setTimeout(() => setErrormsg(''), 3000)
-        }
+  const validate = () => {
+    if (!username || !password) {
+      return "Email and password are required"
     }
 
-    return (
-        <Container>
-            <h2>Please login</h2>
 
-            <Form onSubmit={doSubmit}>
-                <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Email address</Form.Label>
-                    <Form.Control type="email" placeholder="Enter email" value={username} onChange={(ev) => setUsername(ev.target.value)} />
-                </Form.Group>
+    return null
+  }
 
-                <Form.Group className="mb-3" controlId="formBasicPassword">
-                    <Form.Label>Password</Form.Label>
-                    <Form.Control type="password" placeholder="Password" value={password} onChange={(ev) => setPassword(ev.target.value)} />
-                </Form.Group>
-                <Button variant="primary" type="submit">
-                    Log in
-                </Button> {errormsg && <div className="text-danger">{errormsg}</div>}
-            </Form>
-        </Container>
-    );
+  const doSubmit = async (ev) => {
+    ev.preventDefault()
+    setErrormsg('')
 
+    const error = validate()
+    if (error) {
+      setErrormsg(error)
+      setTimeout(() => setErrormsg(''), 3000)
+      return
+    }
 
+    try {
+      const user = await doLogin(username, password)
+      props.doLogin(user)
+    } catch (ex) {
+      setErrormsg(ex.message)
+      setTimeout(() => setErrormsg(''), 3000)
+    }
+  }
+
+  return (
+    <div
+      className="min-vh-100 d-flex align-items-center justify-content-center"
+      
+    >
+      <Container className="d-flex justify-content-center">
+        <Card
+          className="p-4 shadow-lg border-0"
+          style={{
+            width: "360px",
+            backgroundColor: "#edb742" ,
+            borderBottom: "5px solid #1A2A3A"
+          }}
+        >
+            <h2 className="text-center mb-4" style={{ color: "#1A2A3A" }}>
+                <PersonCircle size={70} />
+            </h2>
+
+          <Form onSubmit={doSubmit}>
+            <Form.Group className="mb-3">
+              <Form.Label style={{ color: "#1A2A3A" }}>
+                Email
+              </Form.Label>
+              <Form.Control
+                type="email"
+                placeholder="Enter email"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label style={{ color: "#1A2A3A" }}>
+                Password
+              </Form.Label>
+              <Form.Control
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </Form.Group>
+
+            <Button variant="primary" className="w-100" type="submit" style={{ backgroundColor: "#1A2A3A", borderColor: "#1A2A3A" }}>
+               
+              Log in
+            </Button>
+
+            {errormsg && (
+              <div className="text-danger text-center mt-3">
+                {errormsg}
+              </div>
+            )}
+          </Form>
+        </Card>
+      </Container>
+    </div>
+  )
 }
 
+
 function Logout(props) {
-    const navigate = useNavigate()
+  const navigate = useNavigate()
 
-    useEffect(() => {
-        doLogout().then(() => {
-            props.doLogin({ id: undefined, email: undefined, name: undefined })
-            navigate('/')
-        })
-    }, [])
+  useEffect(() => {
+    doLogout().then(() => {
+      props.doLogin({ id: undefined, email: undefined, name: undefined })
+      navigate('/')
+    })
+  }, [])
 
-    return "Logging out..."
-
+  return (
+    <Container className="min-vh-100 d-flex align-items-center justify-content-center">
+      Logging out...
+    </Container>
+  )
 }
 
 export { LoginForm, Logout }
