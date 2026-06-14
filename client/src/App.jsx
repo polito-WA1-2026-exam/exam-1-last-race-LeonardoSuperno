@@ -4,18 +4,18 @@ import { Container, Button } from 'react-bootstrap';
 import Header from './components/Header.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import { LoginForm, Logout } from './components/LoginForm.jsx';
-import NetworkDisplay  from './components/Network.jsx';
-import GameDashboard from './components/Path.jsx';
-import ResultDisplay from './components/Results.jsx';
+import NetworkDisplay  from './components/NetworkDiplay.jsx';
+import GameDisplay from './components/GameDisplay.jsx';
+import ResultDisplay from './components/ResultsDisplay.jsx';
 import RankingDisplay from './components/RankingDisplay.jsx';
+import ErrorDisplay from './components/ErrorDisplay.jsx';
 import Footer from './components/Footer.jsx';
 import InfoDisplay from './components/InfoDisplay.jsx';
 import { Navigate, Outlet, Route, Routes, useNavigate } from 'react-router';
 import { getStations, getConnections, endGame } from "./api/api.js";
-import backgroundImage from './background.jpg';
+import backgroundImage from './images/background.jpg';
 
 import UserContext from './contexts/UserContext.js';
-import { checkSession } from './api/auth.js';
 
 function App() {
 
@@ -24,14 +24,6 @@ function App() {
   // Currently logged-in user
   const [user, setUser] = useState({ id: undefined, email: undefined, name: undefined })
 
-  // try to restore the login session
-  useEffect(() => {
-    checkSession().then(result => {
-      if (result) {
-        setUser({ id: result.id, email: result.username, name: result.name })
-      }
-    })
-  }, [])
 
   // Login action handler
   const doLogin = (newUser) => {
@@ -43,20 +35,28 @@ function App() {
   const [connections, setConnections] = useState([]);
 
     useEffect(() => {
+      try {
         getStations()
-            .then(setStations)
-            .catch(console.error);
+          .then(setStations)
+          .catch(console.error);
 
         getConnections()
-            .then(setConnections)
-            .catch(console.error);
+          .then(setConnections)
+          .catch(console.error);
+      } catch (err) {
+        navigate("/error", {
+          state: {
+            type: "loading_stations_connections_failed",
+            message: err.message
+          }
+        }
+        )
+      }
     }, []);
 
   const [selectedConnections, setSelectedConnections] = useState([]);
   const [gameId, setGameId] = useState(null);
-  const [expandedSidebar, setExpandedSidebar] = useState(false);
-
-    
+  const [expandedSidebar, setExpandedSidebar] = useState(false); 
   
 
 
@@ -70,7 +70,7 @@ function App() {
             <Route path='logout' element={<Logout doLogin={doLogin} />} />
             <Route path='results' element={<ResultDisplay selectedConnections={selectedConnections} gameId={gameId} />} />
             <Route path='ranking' element={<RankingDisplay />} />
-            <Route path='error' element={<h1>"Something is Wrong"</h1>} />
+            <Route path='error' element={<ErrorDisplay />} />
           </Route>
           <Route path='/game' element={<GameLayout stations={stations} connections={connections} selectedConnections={selectedConnections} setSelectedConnections={setSelectedConnections} gameId={gameId} setGameId={setGameId} />} />
         </Routes>
@@ -94,10 +94,10 @@ function MainLayout(props) {
       <Container>
         <div
           style={{
-            paddingTop: "56px", // altezza header
-            marginLeft: props.expandedSidebar ? "200px" : "56px", // larghezza sidebar
+            paddingTop: "56px", // header
+            marginLeft: props.expandedSidebar ? "200px" : "56px", // sidebar
             minHeight: "100vh",
-            paddingBottom: "56px", // altezza footer
+            paddingBottom: "56px", // footer
           
           }}
         >
@@ -129,14 +129,13 @@ function GameLayout(props) {
         <NetworkDisplay stations={props.stations} />
       </div>
 
-      <GameDashboard
+      <GameDisplay
         connections={props.connections}
         selectedConnections={props.selectedConnections}
         setSelectedConnections={props.setSelectedConnections}
         gameId={props.gameId}
         setGameId={props.setGameId}
-      />
-      
+      />      
     </Container>
 
     <div className="mt-3">
@@ -158,11 +157,5 @@ function NewGameButton(props) {
   ) 
 }
 
-
-function InfoView() {
-
-  
-  return "Info about the game, visible also by unlogged users"
-}
 
 export default App

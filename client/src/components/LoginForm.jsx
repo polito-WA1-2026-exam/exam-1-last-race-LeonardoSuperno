@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react"
-import { doLogin, doLogout } from "../api/auth"
+import { doLoginAPI, doLogoutAPI } from "../api/auth.js"
 import { useNavigate } from "react-router"
 import { Form, Button, Container, Card } from "react-bootstrap"
 import { PersonCircle } from "react-bootstrap-icons"
+
 function LoginForm(props) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -29,7 +30,7 @@ function LoginForm(props) {
     }
 
     try {
-      const user = await doLogin(username, password)
+      const user = await doLoginAPI(username, password)
       props.doLogin(user)
     } catch (ex) {
       setErrormsg(ex.message)
@@ -57,11 +58,12 @@ function LoginForm(props) {
 
           <Form onSubmit={doSubmit}>
             <Form.Group className="mb-3">
-              <Form.Label style={{ color: "#1A2A3A" }}>
-                Email
-              </Form.Label>
+              <Form.Label htmlFor="email">Email</Form.Label>
               <Form.Control
+                id="email"
+                name="email"
                 type="email"
+                autoComplete="username"
                 placeholder="Enter email"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -69,11 +71,12 @@ function LoginForm(props) {
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label style={{ color: "#1A2A3A" }}>
-                Password
-              </Form.Label>
+              <Form.Label htmlFor="password">Password</Form.Label>
               <Form.Control
+                id="password"
+                name="password"
                 type="password"
+                autoComplete="current-password"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -102,7 +105,7 @@ function Logout(props) {
   const navigate = useNavigate()
 
   useEffect(() => {
-    doLogout().then(() => {
+    doLogoutAPI().then(() => {
       props.doLogin({ id: undefined, email: undefined, name: undefined })
       navigate('/')
     })

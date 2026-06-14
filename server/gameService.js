@@ -8,11 +8,11 @@ export const buildGraph = (connections) => {
         const from = conn.station_from;
         const to = conn.station_to;
 
-        // inizializza liste se non esistono
+        // lists initialization
         if (!graph[from]) graph[from] = [];
         if (!graph[to]) graph[to] = [];
 
-        // grafo NON orientato (metro)
+        
         graph[from].push(to);
         graph[to].push(from);
     }
@@ -42,14 +42,14 @@ export const bfs = (graph, startId) => {
 
 export const generateGame = (stations, graph) => {
 
-    // 1. random start
+    // random start
     const start =
         stations[Math.floor(Math.random() * stations.length)];
 
-    // 2. BFS per distanze
+    // BFS to compute distances
     const distances = bfs(graph, start.id);
 
-    // 3. filtra destinazioni valide
+    // filter by valid destination
     const validDestinations = stations.filter(s =>
         s.id !== start.id &&
         distances[s.id] >= 3

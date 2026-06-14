@@ -113,7 +113,7 @@ app.get("/api/games/:id", (request, response) => {
       }
       response.json(game);
     })
-    .catch(() => response.status(500).end());
+    .catch(() => response.status(500).json({error: "internal server error"}));
 });
 
 // POST /api/new_game
@@ -231,7 +231,6 @@ app.post("/api/end_game", isLoggedIn, async (req, res) => {
         });
 
     } catch (err) {
-        console.error(err);
         return res.status(500).json({ error: "Internal server error" });
     }
     
@@ -244,7 +243,6 @@ app.get("/api/ranking", isLoggedIn, async (req, res) => {
     const ranking = await getRanking();
     return res.json(ranking);
   } catch (err) {
-    console.error(err);
     return res.status(500).json({ error: "Internal server error" });
   }
 })

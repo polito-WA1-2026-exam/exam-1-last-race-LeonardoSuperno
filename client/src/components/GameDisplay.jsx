@@ -6,10 +6,9 @@ import { newGame, endGame } from "../api/api.js";
 
 
 
-function GameDashboard({ connections = [],  selectedConnections, setSelectedConnections, gameId, setGameId }) {
+function GameDisplay({ connections = [],  selectedConnections, setSelectedConnections, gameId, setGameId }) {
     const [gameInfo, setGameInfo] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
     const [timeLeft, setTimeLeft] = useState(90);
     const [expired, setExpired] = useState(false);
 
@@ -26,7 +25,12 @@ function GameDashboard({ connections = [],  selectedConnections, setSelectedConn
                 setSelectedConnections([]);
 
             } catch (err) {
-                setError("Unable to start a new game.");
+                navigate("/error", {
+                    state: {
+                        type: "unable to start the game",
+                        message: err.message
+                    }}
+                )
             } finally {
                 setLoading(false);
             }
@@ -71,10 +75,6 @@ function GameDashboard({ connections = [],  selectedConnections, setSelectedConn
             <div className="mt-2">Loading the game</div>
             </div>
         );
-    }
-
-    if (error) {
-        return <Alert variant="danger">{error}</Alert>;
     }
 
 
@@ -129,9 +129,6 @@ function GameDashboard({ connections = [],  selectedConnections, setSelectedConn
         </>
     );
 }
-
-
-
 
 function ConnectionItem({
     connection,
@@ -314,4 +311,4 @@ function PathSelection({ connections = [], selectedConnections, setSelectedConne
 
 
 
-export default GameDashboard;
+export default GameDisplay;

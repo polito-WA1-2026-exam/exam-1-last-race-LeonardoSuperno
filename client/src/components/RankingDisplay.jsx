@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Container, Card, Table, Spinner, Alert, Badge } from "react-bootstrap";
 import { getRanking } from "../api/api.js";
+import { useNavigate } from 'react-router';
 
 function RankingDisplay() {
     const [ranking, setRanking] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+
+    const navigate = useNavigate()
 
     useEffect(() => {
         const loadRanking = async () => {
@@ -13,27 +15,25 @@ function RankingDisplay() {
                 const data = await getRanking();
                 setRanking(data);
             } catch (err) {
-                setError("Unable to load ranking");
+                navigate("/error", {
+                    state: {
+                        type: "ranking fetch failed",
+                        message: err.message
+                    }}
+                )
+                
             } finally {
                 setLoading(false);
             }
         };
 
         loadRanking();
-    }, []);
+    }, [navigate]);
 
     if (loading) {
         return (
             <Container className="mt-4 text-center">
                 <Spinner animation="border" />
-            </Container>
-        );
-    }
-
-    if (error) {
-        return (
-            <Container className="mt-4">
-                <Alert variant="danger">{error}</Alert>
             </Container>
         );
     }

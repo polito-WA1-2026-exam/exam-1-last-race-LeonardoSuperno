@@ -4,7 +4,7 @@ import { Card, Button, Alert, Container, ListGroup, Badge, Spinner } from "react
 import { endGame } from "../api/api.js";
 
 
-function ResultsPage({ selectedConnections, gameId }) {
+function ResultsDisplay({ selectedConnections, gameId }) {
     const [loading, setLoading] = useState(true);
     const [result, setResult] = useState(null);
     const [error, setError] = useState("");
@@ -21,14 +21,17 @@ function ResultsPage({ selectedConnections, gameId }) {
                     selected_connections: connections_id
                 };
 
-                console.log("Request body for endGame:", requestBody);
-
                 const result = await endGame(requestBody);
                 setResult(result);
                 }
 
             catch (err) {
-                setError("Unable to obtain game results.");
+                navigate("/error", {
+                    state: {
+                        type: "Unable to obtain game results",
+                        message: err.message
+                    }}
+                )
             } finally {
                 setLoading(false);
             }
@@ -41,7 +44,6 @@ function ResultsPage({ selectedConnections, gameId }) {
         return (
             <div className="d-flex flex-column justify-content-center align-items-center vh-100">
             <Spinner animation="border" />
-            <div className="mt-3">Loading the results</div>
             </div>
         );
     }
@@ -87,7 +89,6 @@ function ResultsPage({ selectedConnections, gameId }) {
                 <Card className="shadow-lg mt-4" style={{ width: "60rem" }}>
                     <Card.Body>
                         <Alert variant="danger">
-                            <h4>Error</h4>
                             <p>{result.error}</p>
                         </Alert>
 
@@ -171,4 +172,4 @@ function ResultsPage({ selectedConnections, gameId }) {
     );
 }
 
-export default ResultsPage;
+export default ResultsDisplay;

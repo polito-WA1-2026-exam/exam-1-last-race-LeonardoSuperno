@@ -2,8 +2,8 @@ POST http://localhost:3001/api/sessions
 content-type: application/json
 
 {
-  "username": "luigi.derussis@polito.it",
-  "password": "password" 
+  "username": "fulvio.corno@email.it",
+  "password": "passwordd" 
 }
 
 ###
@@ -35,14 +35,14 @@ GET http://localhost:3001/api/events
 
 ###
 
-GET http://localhost:3001/api/games/48
+GET http://localhost:3001/api/games/2
 
 ###
 POST http://localhost:3001/api/end_game
 content-type: application/json
 
 {
-  "game_id": 48,
+  "game_id": 368,
   "selected_connections": [7, 8, 11]
 }
 
