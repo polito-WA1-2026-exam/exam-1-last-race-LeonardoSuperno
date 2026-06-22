@@ -1,14 +1,6 @@
 import { Navbar, Nav, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router";
-import {
-    House,
-    HouseFill,
-    Trophy,
-    TrophyFill,
-    InfoCircle,
-    InfoCircleFill,
-    List
-} from "react-bootstrap-icons";
+import { House, HouseFill, Trophy, TrophyFill, InfoCircle, InfoCircleFill, List } from "react-bootstrap-icons";
 import { useContext, useState } from "react";
 import UserContext from "../contexts/UserContext";
 
@@ -16,8 +8,6 @@ function Sidebar({ expanded, setExpanded }) {
     const navigate = useNavigate();
     const location = useLocation();
     const user = useContext(UserContext);
-
-    
 
     const menuItems = [
         {

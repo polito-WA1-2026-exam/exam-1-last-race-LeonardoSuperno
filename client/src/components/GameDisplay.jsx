@@ -62,7 +62,7 @@ function GameDisplay({ connections = [],  selectedConnections, setSelectedConnec
         if (!expired) return;
         
         const timeout = setTimeout(() => {
-            navigate("/results", { replace: true });
+            navigate("/results", { replace: true }); // avoid to go back to the game page
         }, 3000);
 
         return () => clearTimeout(timeout);
@@ -130,17 +130,7 @@ function GameDisplay({ connections = [],  selectedConnections, setSelectedConnec
     );
 }
 
-function ConnectionItem({
-    connection,
-    selected,
-    index,
-    total,
-    mode,
-    onSelect,
-    onRemove,
-    onMoveUp,
-    onMoveDown
-}) {
+function ConnectionItem({ connection, selected, index, total, mode, onSelect, onRemove, onMoveUp, onMoveDown }) {
     return (
         <ListGroup.Item className="d-flex justify-content-between align-items-center">
             <span>
@@ -196,7 +186,7 @@ function PathSelection({ connections = [], selectedConnections, setSelectedConne
     const navigate = useNavigate();
 
     const handleSubmit = async () => {
-        navigate("/results", { replace: true });
+        navigate("/results", { replace: true }); // avoid to go back to the game page
 };
 
     const addConnection = (connection) => {

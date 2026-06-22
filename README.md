@@ -56,7 +56,7 @@
     }
   ]
   ```
-  - status codes: 200 OK, 500 Internal Server Error
+  - status codes: 200 OK, 401 Unauthorized, 500 Internal Server Error
 - GET `/api/connections`
   - request parameters and body: none
   - response body
@@ -72,7 +72,7 @@
     }
   ]
   ```
-  - status codes: 200 OK, 500 Internal Server Error
+  - status codes: 200 OK, 401 Unauthorized, 500 Internal Server Error
 - GET `/api/events`
   - request parameters and body: none
   - response body
@@ -132,6 +132,12 @@
     ]
   }
   ```
+  or
+    ```json
+  {
+    "error" : "description"
+  }
+  ```
   - status codes: 200 OK, 401 Unauthorized, 500 Internal Server Error
 
 - GET `/api/games/:game_id`:
@@ -148,7 +154,7 @@
     "status": "COMPLETED"
   }
   ```
-  - status codes: 200 OK, 404 Not Found, 500 Internal Server Error
+  - status codes: 200 OK, 401 Unauthorized, 404 Not Found, 500 Internal Server Error
 
 - GET `/api/ranking`
   - auth: user identified via passport session

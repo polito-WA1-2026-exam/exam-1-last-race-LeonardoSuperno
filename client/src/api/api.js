@@ -5,7 +5,9 @@ function delay(ms) {
 async function getStations() {
     try {
         await delay(500) // simulate network delay
-        const response = await fetch('http://localhost:3001/api/stations')
+        const response = await fetch('http://localhost:3001/api/stations', {
+            credentials: 'include'
+        })
 
         if (response.ok) {
             const list_of_stations = await response.json()
@@ -23,7 +25,9 @@ async function getStations() {
 async function getConnections() {
     try {
         await delay(500) // simulate network delay
-        const response = await fetch('http://localhost:3001/api/connections')
+        const response = await fetch('http://localhost:3001/api/connections', {
+            credentials: 'include'
+        })
 
         if (response.ok) {
             const list_of_connections = await response.json()

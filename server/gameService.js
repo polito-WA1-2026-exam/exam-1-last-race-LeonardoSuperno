@@ -42,28 +42,31 @@ export const bfs = (graph, startId) => {
 
 export const generateGame = (stations, graph) => {
 
-    // random start
-    const start =
-        stations[Math.floor(Math.random() * stations.length)];
+    while (true) {
 
-    // BFS to compute distances
-    const distances = bfs(graph, start.id);
+        // random start
+        const start =
+            stations[Math.floor(Math.random() * stations.length)];
 
-    // filter by valid destination
-    const validDestinations = stations.filter(s =>
-        s.id !== start.id &&
-        distances[s.id] >= 3
-    );
+        // BFS to compute distances
+        const distances = bfs(graph, start.id);
 
-    if (validDestinations.length === 0) {
-        throw new Error("No valid destination found");
+        // filter by valid destination
+        const validDestinations = stations.filter(s =>
+            s.id !== start.id &&
+            distances[s.id] >= 3
+        );
+
+        if (validDestinations.length === 0) {
+            continue; // try another start
+        }
+
+        // random destination
+        const destination =
+            validDestinations[
+                Math.floor(Math.random() * validDestinations.length)
+            ];
+
+        return { start, destination };
     }
-
-    // 4. random destination
-    const destination =
-        validDestinations[
-            Math.floor(Math.random() * validDestinations.length)
-        ];
-
-    return { start, destination };
 };

@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import { Container, Card, Button, Row, Col } from "react-bootstrap";
-
-// React Bootstrap Icons
 import { Map, Compass, Coin } from "react-bootstrap-icons";
 
 const InfoDisplay = () => {
@@ -61,7 +59,6 @@ const InfoDisplay = () => {
             Find Your Way Through the Hidden Egyptian Underground
           </h2>
 
-          {/* Navigation */}
           <Row className="mb-4 text-center">
             {Object.entries(sections).map(([key, sec]) => (
               <Col key={key}>
@@ -84,7 +81,6 @@ const InfoDisplay = () => {
             ))}
           </Row>
 
-          {/* Content */}
           <Card
             style={{
               backgroundColor: "#243447",

@@ -55,7 +55,7 @@ const isLoggedIn = (req, res, next) => {
 }
 
 app.use(session({
-  secret: "shhhhh... it's a secret!",
+  secret: "Last-Race_WA_2026",
   resave: false,
   saveUninitialized: false,
 }));
@@ -84,28 +84,28 @@ app.delete("/api/sessions/current", (req, res) => {
 });
 
 // GET /api/stations
-app.get("/api/stations", (request, response) => {
+app.get("/api/stations", isLoggedIn, (request, response) => {
   listStations()
     .then(stations => response.json(stations))
     .catch(() => response.status(500).end());
 });
 
 // GET /api/connections
-app.get("/api/connections", (request, response) => {
+app.get("/api/connections", isLoggedIn, (request, response) => {
   listConnections()
     .then(connections => response.json(connections))
     .catch(() => response.status(500).end());
 });
 
 // GET /api/events
-app.get("/api/events", (request, response) => {
+app.get("/api/events", isLoggedIn, (request, response) => {
   listEvents()
     .then(events => response.json(events))
     .catch(() => response.status(500).end());
 });
 
 // GET /api/games/:id
-app.get("/api/games/:id", (request, response) => {
+app.get("/api/games/:id", isLoggedIn, (request, response) => {
   getGameById(request.params.id)
     .then(game => {
       if (!game) {
@@ -141,24 +141,31 @@ app.post("/api/end_game", isLoggedIn, async (req, res) => {
         const userId = req.user.id;
         const { game_id, selected_connections } = req.body;
 
-        // 1. GET GAME
+        // GET GAME
         const game = await getGameById(game_id);
 
         if (!game) {
             return res.status(200).json({ error: "Game not found" });
         }
 
-        // 2. CHECK OWNER
+        // CHECK OWNER
         if (game.user_id !== userId) {
             return res.status(200).json({ error: "Not your game" });
         }
 
-        // 3. CHECK STATUS
+        // CHECK STATUS
         if (game.status === "COMPLETED") {
             return res.status(200).json({ error: "Game already finished" });
         }
 
-        // 4. CHECK TIME LIMIT (90 seconds)
+        // CHECK FOR DUPLICATES
+        if (new Set(selected_connections).size !== selected_connections.length) {
+            return res.status(200).json({
+                error: "A connection can only be selected once"
+            });
+}
+
+        // CHECK TIME LIMIT (90 seconds)
         const gameLimit = 90;
         const delayWindow = 10;
         const timeLimit = gameLimit + delayWindow; // add some seconds of delay window to avoid penalizing players for network delays
@@ -167,14 +174,14 @@ app.post("/api/end_game", isLoggedIn, async (req, res) => {
             return res.status(200).json({ error: "Game time limit exceeded" });
         }
 
-        // 5. LOAD GRAPH
+        // LOAD GRAPH
         const connections = await listConnections();
         
         const graph = buildGraph(connections);
 
 
 
-        // 6. VALIDATE PATH (must be continuous)
+        // VALIDATE PATH (must be continuous)
         let old_station = game.start_station_id;
 
         for (let i = 0; i < selected_connections.length; i++) {
@@ -198,10 +205,10 @@ app.post("/api/end_game", isLoggedIn, async (req, res) => {
             return res.status(200).json({ final_score: 0, events: [], error: "Path does not reach destination" });
         }
 
-        // 7. BASE SCORE
+        // BASE SCORE
         let score = 20;
 
-        // 8. APPLY EVENTS (1 random event per connection)
+        // APPLY EVENTS (1 random event per connection)
         const events = await listEvents();
 
         const appliedEvents = [];
@@ -218,10 +225,10 @@ app.post("/api/end_game", isLoggedIn, async (req, res) => {
             });
         }
 
-        // 9. SCORE NORMALIZATION
+        // SCORE NORMALIZATION
         if (score < 0) score = 0;
 
-        // 10. UPDATE GAME
+        // UPDATE GAME
         await endGame(game_id, score);
 
       

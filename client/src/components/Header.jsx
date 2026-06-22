@@ -7,7 +7,7 @@ import UserContext from '../contexts/UserContext';
 function Header(props) {
   const user = useContext(UserContext);
 
-  const destination = user.id ? '/home' : '/';
+  const destination = user.id ? '/home' : '/'; // Link for the title
 
   return (
     <Navbar
