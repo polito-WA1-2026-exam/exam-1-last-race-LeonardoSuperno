@@ -191,8 +191,8 @@
 
 ## Screenshot
 
-![Ranking](.\client\src\images\ranking.png)
-![Game](.\client\src\images\game.png)
+![Ranking](client/src/images/ranking.png)
+![Game](client/src/images/game.png)
 
 ## Users Credentials
 
