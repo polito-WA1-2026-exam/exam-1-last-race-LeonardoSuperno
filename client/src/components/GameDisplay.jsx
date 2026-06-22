@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Row, Col, Card, ListGroup, Button,Spinner, Alert, Stack } from "react-bootstrap";
 import { ArrowUp, ArrowDown, Trash } from "react-bootstrap-icons";
 import { useNavigate } from 'react-router';
-import { newGame, endGame } from "../api/api.js";
+import { newGame } from "../api/api.js";
 
 
 

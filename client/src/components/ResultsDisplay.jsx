@@ -102,8 +102,8 @@ function ResultsDisplay({ selectedConnections, gameId }) {
     }
 
     return (
-        <Container className="d-flex justify-content-center mt-5">
-            <Card style={{ width: "30rem" }} className="shadow-lg">
+        <Container className="d-flex justify-content-center mt-3">
+            <Card style={{ width: "28rem", fontSize: "0.9rem" }} className="shadow-lg">
                 
                 {/* HEADER */}
                 <Card.Header className="text-center text-white" style={{ backgroundColor: "#1A2A3A", borderBottom: "5px solid #ebc36d" }}>

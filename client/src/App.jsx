@@ -1,71 +1,73 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useContext, useState, useEffect } from 'react';
+import { Navigate, Outlet, Route, Routes, useNavigate } from 'react-router';
 import { Container, Button } from 'react-bootstrap';
+import { LoginForm, Logout } from './components/LoginForm.jsx';
 import Header from './components/Header.jsx';
 import Sidebar from './components/Sidebar.jsx';
-import { LoginForm, Logout } from './components/LoginForm.jsx';
+import InfoDisplay from './components/InfoDisplay.jsx';
 import NetworkDisplay  from './components/NetworkDiplay.jsx';
 import GameDisplay from './components/GameDisplay.jsx';
 import ResultDisplay from './components/ResultsDisplay.jsx';
 import RankingDisplay from './components/RankingDisplay.jsx';
 import ErrorDisplay from './components/ErrorDisplay.jsx';
 import Footer from './components/Footer.jsx';
-import InfoDisplay from './components/InfoDisplay.jsx';
-import { Navigate, Outlet, Route, Routes, useNavigate } from 'react-router';
-import { getStations, getConnections, endGame } from "./api/api.js";
 import backgroundImage from './images/background.jpg';
-
 import UserContext from './contexts/UserContext.js';
+import { getConnections, getStations } from './api/api.js';
 
 function App() {
 
   const navigate = useNavigate()
 
-  // Currently logged-in user
   const [user, setUser] = useState({ id: undefined, email: undefined, name: undefined })
-
-
-  // Login action handler
-  const doLogin = (newUser) => {
-    setUser({ id: newUser.id, email: newUser.username, name: newUser.name })
-    navigate('/home')
-  }
-
   const [stations, setStations] = useState([]);
-  const [connections, setConnections] = useState([]);
-
-    useEffect(() => {
-      try {
-        getStations()
-          .then(setStations)
-          .catch(console.error);
-
-        getConnections()
-          .then(setConnections)
-          .catch(console.error);
-      } catch (err) {
-        navigate("/error", {
-          state: {
-            type: "loading_stations_connections_failed",
-            message: err.message
-          }
-        }
-        )
-      }
-    }, []);
-
+  const [connections, setConnections] = useState([]); 
   const [selectedConnections, setSelectedConnections] = useState([]);
   const [gameId, setGameId] = useState(null);
   const [expandedSidebar, setExpandedSidebar] = useState(false); 
-  
 
+  const doLogin = async (newUser) => {
+    setUser({
+      id: newUser.id,
+      email: newUser.username,
+      name: newUser.name
+    });
+    navigate('/home')
+  };
+
+  useEffect(() => {
+  const loadData = async () => {
+    if (!user.id) return;
+
+    try {
+      const [stationsData, connectionsData] = await Promise.all([
+        getStations(),
+        getConnections()
+      ]);
+
+      setStations(stationsData);
+      setConnections(connectionsData);
+
+    } catch (err) {
+      navigate('/error', {
+        state: {
+          type: "load_data_failed",
+          message: err.message
+        }
+      });
+    }
+  };
+
+  loadData();
+}, [user.id]);
 
   return (
     <UserContext.Provider value={user}>
         <Routes>
           <Route path='/' element={<MainLayout doLogin={doLogin} expandedSidebar={expandedSidebar} setExpandedSidebar={setExpandedSidebar} />}>
             <Route index element={<InfoDisplay />} />
-            <Route path='home' element={<HomeLayout stations={stations} connections={connections} />} />
+            <Route path='home' element={<HomeLayout stations={stations} connections={connections}  />} />
             <Route path='login' element={<LoginForm doLogin={doLogin} />} />
             <Route path='logout' element={<Logout doLogin={doLogin} />} />
             <Route path='results' element={<ResultDisplay selectedConnections={selectedConnections} gameId={gameId} />} />
@@ -91,6 +93,7 @@ function MainLayout(props) {
    
       <Header doLogin={props.doLogin} />
       <Sidebar expanded={props.expandedSidebar} setExpanded={props.setExpandedSidebar} />
+
       <Container>
         <div
           style={{
@@ -103,8 +106,7 @@ function MainLayout(props) {
         >
           <Outlet />
         </div>
-        </Container>
-        
+        </Container>       
       
       <Footer />
    
@@ -115,7 +117,7 @@ function MainLayout(props) {
 
 function HomeLayout(props) {
   return <>
-    <NetworkDisplay stations={props.stations} connections={props.connections} />
+    <NetworkDisplay stations={props.stations} setStations={props.setStations} connections={props.connections} setConnections={props.setConnections} />
     <NewGameButton />
 
   </>
